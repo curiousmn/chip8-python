@@ -19,7 +19,7 @@ To run the emulator, simply execute the following command:
 
 ```
 pip3 install pygame
-python chip8.py
+python3 main.py <rom_path>
 ```
 
 This will start the emulator and display the CHIP-8 screen. You can use the keyboard to interact with the emulator and play the games.
