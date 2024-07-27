@@ -20,12 +20,12 @@ class CPU:
         self.max_cycles = 1000000  # Prevent infinite loops
         self.start_counter = 0
 
-    def push(self, value: int) -> None:
+    def push_to_stack(self, value: int) -> None:
         if self.SP < 16:
             self.stack[self.SP] = value
         else:
             raise OverflowError("Stack overflow")
-    def pop(self) -> int:
+    def pop_from_stack(self) -> None:
         if self.SP > 0:
             self.SP -= 1
             return self.stack[self.SP]
@@ -33,8 +33,7 @@ class CPU:
             raise IndexError("Stack underflow")
 
     def fetch(self) -> int:
-        """ Get the byte at the memory address pointed by PC then shift 8 bit to
-            make some room for other 8 bit, increase the PC by 1 then read the memory address,
+        """ Get the byte at the memory address pointed by PC then shift 8 bit to make some room for other 8 bit, increase the PC by 1 then read the memory address,
             combine both of them with OR
         """
         opcode = (self.memory.read(self.PC) << 8) | self.memory.read(self.PC + 1)
@@ -130,12 +129,11 @@ class CPU:
             logging.warning(f"Unknown opcode: {opcode:X}")
 
     def cycle(self) -> None:
-        if self.PC == 0x200:
-            self.start_counter += 1
         self.cycle_count += 1
         if self.cycle_count > self.max_cycles:
 
             raise Exception("Maximum cycle count exceeded. Possible infinite loop.")
+
         opcode = self.fetch()
         print(f"Opcode executing: {opcode}")
         self.decode_and_execute(opcode)
@@ -149,17 +147,19 @@ class CPU:
                 self.screen.set_pixel(x, y, False)
 
     def return_from_subroutine(self) -> None:
-        self.PC = self.stack.pop()
-        self.SP -= 1
+        if self.SP > 0:
+            self.PC = self.pop_from_stack()
+
 
     def jump(self, NNN: int) -> None:
         self.PC = NNN
-
     def call_subroutine(self, NNN: int) -> None:
-        if len(self.stack) <= 16:
-            self.SP += 1
-            self.push(self.PC)
-            self.PC = NNN
+        if self.SP < 16:  # Ensure we don't overflow the stack
+           self.push_to_stack(self.PC)
+           self.PC = NNN & 0x0FFF  # Ensure address is within valid range
+           self.last_op = f"CALL {self.PC:04X}"  # For debugging
+        else:
+           raise OverflowError("Stack overflow")
 
     def skip_if_equal(self, X: int, NN: int) -> None:
         if self.V[X] == NN:
@@ -241,7 +241,7 @@ class CPU:
                         self.V[0xF] = 1
 
     def skip_if_pressed(self, X: int) -> None:
-        key = self.V[x]
+        key = self.V[X]
         if self.keyboard.is_key_pressed(key):
             self.PC += 2
 

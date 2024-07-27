@@ -13,4 +13,4 @@ if __name__ == "__main__":
         emulator = Emulator(rom_path)
         emulator.run()
     except Exception as e:
-        logging.error(f"Emulator crashed: {str(e)}")
+        print(f"Emulator crashed: {str(e)}")

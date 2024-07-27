@@ -23,9 +23,8 @@ class Memory:
             0xF0, 0x80, 0xF0, 0x80, 0xF0,  # E
             0xF0, 0x80, 0xF0, 0x80, 0x80   # F
         ]
-        # Load font set into memory starting at address 0x50
         for i, byte in enumerate(font_set):
-            self.mem[i] = byte
+            self.mem[0x50 + i] = byte
 
     def read(self, address: int) -> int:
         if 0 <= address < 4096:

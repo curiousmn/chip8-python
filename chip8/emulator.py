@@ -23,30 +23,20 @@ class Emulator:
             raise
 
     def run(self):
-        try:
-            running = True
-            while running:
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        running = False
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
 
-                try:
-                    for _ in range(10):
-                        self.cpu.cycle()
-                except Exception as e:
-                    logging.error(f"Error during CPU cycle: {str(e)}")
-                    raise
+            self.cpu.cycle()
 
-                self.update_display()
-                self.cpu.update_timers()
-                self.cpu.keyboard.update()
+            self.update_display()
+            self.cpu.update_timers()
+            self.cpu.keyboard.update()
 
-                self.clock.tick(60)
+            self.clock.tick(120)
 
-        except Exception as e:
-            logging.error(f"Error in main loop: {str(e)}")
-        finally:
-            pygame.quit()
 
     def update_display(self):
         try:
